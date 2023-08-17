@@ -1,4 +1,4 @@
-setwd(dir = "/Users/dankehila/OneDrive - UBC/Dan/Thesis/Fluor fitness paper/2307 code/cleaned_datasets/")
+setwd(dir = "cleaned_datasets/")
 library(tidyverse);library(broom);library(segmented)
 
 
