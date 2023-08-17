@@ -1,4 +1,4 @@
-setwd(dir = "/Users/dankehila/OneDrive - UBC/Dan/Thesis/Fluor fitness paper/2307 code/make_datasets/")
+setwd(dir = "make_datasets/")
 library(tidyverse)
 # Data loading ------------------------------------------------------------
 
