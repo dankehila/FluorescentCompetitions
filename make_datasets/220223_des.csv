@@ -1,0 +1,9 @@
+﻿Row,Colour,Genotype,Type
+C,T,1,monoculture
+D,G,1,monoculture
+E,T,3,monoculture
+F,G,3,monoculture
+G,CvG,1.1,coculture
+H,CvG,1.3,coculture
+I,CvG,3.1,coculture
+J,CvG,3.3,coculture
