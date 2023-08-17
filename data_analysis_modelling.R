@@ -1,4 +1,4 @@
-setwd('/Users/dankehila/OneDrive - UBC/Dan/Thesis/Fluor fitness paper/2307 code/')
+
 # Load packages and raw data ----------------------------------------------
 library(cmdstanr);library(posterior);library(tidyverse);library(bayesplot);library(ggdist);library(deSolve)
 options(mc.cores = 8)
