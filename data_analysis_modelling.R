@@ -197,7 +197,6 @@ llg_fit_multK = llg_mod_multK$sample(
 #llg_fit_multK$save_output_files(dir = 'full_models/full model outputs/20230712 antibiotic final/', basename = '230712_multk')
 
 
-dir = '/Users/dankehila/Library/CloudStorage/OneDrive-UBC/Dan/Experiments/Theory/2022/stan baranyi roberts/full_models/full model outputs/20230712 antibiotic final/'
 llg_fit = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = '230712_onek.*'),sep=""))
 llg_fit_multK = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = '230712_multk.*'),sep=""))
 
