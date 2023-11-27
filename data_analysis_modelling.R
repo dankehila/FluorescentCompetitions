@@ -197,7 +197,7 @@ llg_fit_multK = llg_mod_multK$sample(
 #llg_fit_multK$save_output_files(dir = 'full_models/full model outputs/20230712 antibiotic final/', basename = '230712_multk')
 
 
-dir = 'full_models/full model outputs/20230712 antibiotic final/'
+dir = '/Users/dankehila/Library/CloudStorage/OneDrive-UBC/Dan/Experiments/Theory/2022/stan baranyi roberts/full_models/full model outputs/20230712 antibiotic final/'
 llg_fit = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = '230712_onek.*'),sep=""))
 llg_fit_multK = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = '230712_multk.*'),sep=""))
 
@@ -900,4 +900,59 @@ ypred %>%
   ) %>% subset(select=-alldat) %>% 
   write.csv('cleaned_datasets/2307_sel_coefs_and_growth_rates.csv')
 
+# K vs r ------------------------------------------------------------------
 
+K_data = as_tibble(llg_fit_multK$draws('K_array',format='draws_list')) %>% 
+  mutate(ID=1:n()) %>% group_by(ID) %>% nest %>% 
+  mutate(data = map(data,~unlist(.x)),data=map(data,exp),
+         Kmean=map_dbl(data,mean),Kupr=map_dbl(data,quantile,probs=0.975),
+         Klwr=map_dbl(data,quantile,probs=0.025)) %>% 
+  subset(select=-data) %>%  full_join(design)
+
+as_tibble(llg_fit_multK$draws('r',format='draws_list')) %>% 
+  mutate(ID=rep(1:nrow(design),2),which=rep(c('r1','r2'),each=nrow(design))) %>% 
+  group_by(ID,which) %>% nest %>% pivot_wider(names_from=which,values_from=data) %>% 
+  mutate(alldat = map2(r1,r2,~c(unlist(.x),unlist(.y))),
+         rmean=map_dbl(alldat,mean),rupr=map_dbl(alldat,quantile,probs=0.975),rlwr=map_dbl(alldat,quantile,probs=0.025)) %>% 
+  subset(select = c(ID,rmean,rupr,rlwr)) %>% full_join(K_data) %>% 
+  ggplot() + theme_classic()+
+  geom_pointinterval(aes(x=Kmean,y=rmean,ymin=rlwr,ymax=rupr),color='grey10',linewidth=0,size=5,interval_colour='grey70') + 
+  geom_pointinterval(aes(x=Kmean,y=rmean,xmin=Klwr,xmax=Kupr),color='grey10',linewidth=0,size=5,interval_colour='grey70') +
+  labs(x='Culture-specific maximum density κ',y='Averaged growth rate of competitors')
+
+
+
+# Relationship between costs and epistatic terms --------------------------
+
+diff_costs = as_tibble(llg_fit_multK$draws('dc',format='draws_list')) %>% 
+  mutate(ID=1:n(),coefname=colnames(modmat1)) %>% group_by(ID,coefname) %>% nest %>% 
+  mutate(data = map(data,~unlist(.x))) %>% subset(select=c(data,coefname)) %>% 
+  filter(!(coefname == "(Intercept)")) %>%# mutate(rvar=mean(rvar)) %>% 
+  mutate(type = case_when(
+    grepl("\\:",coefname) ~ 'epistatic',
+    coefname %in% colnames(modmat1)[4:12] ~ 'plasmid',
+    T ~ 'FP'))
+
+FPcosts = diff_costs %>% 
+  filter(type == 'FP') %>% rename(FP = coefname,FPvalue=data) %>% subset(select = -type)
+
+PLcosts = diff_costs %>% 
+  filter(type == 'plasmid') %>% rename(plasmid = coefname,PLvalue = data) %>% subset(select = -type)
+
+
+diff_costs %>% filter(type == 'epistatic') %>% 
+  separate(coefname,into = c('FP','plasmid'),sep=":") %>% 
+  full_join(FPcosts) %>% full_join(PLcosts) %>% 
+  mutate(
+    EPIval = map(data,rvar),FPval = map(FPvalue,rvar),PLval = map(PLvalue,rvar)
+  ) %>% unnest(c(EPIval,FPval,PLval)) %>% 
+  mutate(
+    GENval = FPval+PLval
+  ) %>% 
+  ggplot() + stat_pointinterval(aes(x=median(GENval),ydist=EPIval))+
+  stat_pointinterval(aes(xdist=(GENval),y=median(EPIval))) + 
+  labs(x='sum of additive genetic components', y = 'epistatic component') + theme_classic() 
+
+
+  
+         
