@@ -192,13 +192,14 @@ llg_fit_multK = llg_mod_multK$sample(
   data = stan_data_y0,chains=4,iter_warmup = 1000,iter_sampling = 1000,
   init = init_fun_multK
 )
+#uncomment to save fits
+#llg_fit$save_output_files(dir = '...',basename = 'one_K')
+#llg_fit_multK$save_output_files(dir = '...', basename = 'multilevel_K')
 
-#llg_fit$save_output_files(dir = 'full_models/full model outputs/20230712 antibiotic final/',basename = '230712_onek')
-#llg_fit_multK$save_output_files(dir = 'full_models/full model outputs/20230712 antibiotic final/', basename = '230712_multk')
-
-
-llg_fit = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = '230712_onek.*'),sep=""))
-llg_fit_multK = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = '230712_multk.*'),sep=""))
+#uncomment to load saved fits
+#dir = "..."
+llg_fit = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = 'one_K*'),sep=""))
+llg_fit_multK = as_cmdstan_fit(files = paste(dir, list.files(dir,pattern = 'multilevel_K*'),sep=""))
 
 # LOO CV ------------------------------------------------------------------
 
